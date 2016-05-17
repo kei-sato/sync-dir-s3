@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+set -eu
+
+test -s /etc/cron-envs && . "$_"
+
+log() { echo "$(date):" "$@"; }
+
+MASTER_DIR="$LOCAL_DIR/master"
+BACKUP_DIR="$LOCAL_DIR/backup"
+
+mkdir -p "$MASTER_DIR"
+mkdir -p "$BACKUP_DIR"
+
+aws s3 sync "$S3_PATH" "$LOCAL_DIR" --delete
+
+LATEST=$(ls -r "$BACKUP_DIR"/*.tar.gz | tail -n1)
+(cd "$MASTER_DIR" && tar xzf "$LATEST") && log "extracted $LATEST -> $MASTER_DIR"

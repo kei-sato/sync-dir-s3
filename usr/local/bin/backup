@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+set -eu
+
+test -s /etc/cron-envs && . "$_"
+
+log() { echo "$(date):" "$@"; }
+
+MASTER_DIR="$LOCAL_DIR/master"
+BACKUP_DIR="$LOCAL_DIR/backup"
+FILE_NAME="backup_$(date +%Y%m%d%H%M).tar.gz"
+
+mkdir -p "$MASTER_DIR"
+mkdir -p "$BACKUP_DIR"
+
+(cd "$MASTER_DIR" && tar czf - . > "$BACKUP_DIR/$FILE_NAME") && log "$BACKUP_DIR/$FILE_NAME created"
+
+find "$BACKUP_DIR" -type f -name '*.tar.gz' ${EXPIRE_DAY_AFTER:+-mtime +$EXPIRE_DAY_AFTER} -daystart -print0 | xargs -0 rm -rf
+
+aws s3 sync "$LOCAL_DIR" "$S3_PATH" --delete
+
+log "done"
