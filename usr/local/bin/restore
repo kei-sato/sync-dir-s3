@@ -21,5 +21,5 @@ aws s3 sync "$S3_PATH" "$LOCAL_DIR" "$@"
   exit
 }
 
-LATEST=$(ls -r "$BACKUP_DIR"/*.tar.gz | tail -n1)
+LATEST=$(ls -rt "$BACKUP_DIR"/*.tar.gz | tail -n1)
 (cd "$MASTER_DIR" && tar xzf "$LATEST") && log "extracted $LATEST -> $MASTER_DIR"
